@@ -40,7 +40,8 @@ namespace ShikimoriSharp
 
             var request = new HttpRequestMessage(new HttpMethod(method), dest);
             request.Headers.TryAddWithoutValidation("User-Agent", _settings.ClientName);
-            request.Content = data;
+            if (method != "GET" && method != "HEAD")
+                request.Content = data;
             if (!(_token is null))
                 request.Headers.TryAddWithoutValidation("Authorization", $"{_token.TokenType} {_token.Access_Token}");
             var ret = await httpClient.SendAsync(request);
