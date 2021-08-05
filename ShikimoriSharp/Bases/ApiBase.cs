@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Text;
@@ -57,11 +58,43 @@ namespace ShikimoriSharp.Bases
             return content;
         }
 
+        private static string ValueToString(object value)
+            => (value switch
+            {
+                bool b => b ? "true" : "false",
+                _ => value
+            }).ToString();
+
+        private static string DeserializeToQuery<T>(T obj)
+        {
+            if (obj is null) return null;
+            var typeooft = obj.GetType();
+            var type = typeooft.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            var query = type.Select(it => new
+                {
+                    it.Name, Value = typeooft.GetField(it.Name)?.GetValue(obj)
+                })
+                .Where(it => !(it.Value is null))
+                .Select(x => $"{WebUtility.UrlEncode(x.Name)}={WebUtility.UrlEncode(ValueToString(x.Value))}");
+            return string.Join("&", query);
+        }
+
         public async Task<TResult> Request<TResult, TSettings>(string apiMethod, TSettings settings,
             AccessToken token = null, string method = "GET")
         {
-            var settingsInfo = DeserializeToRequest(settings);
-            return await _apiClient.RequestForm<TResult>($"{Site}{apiMethod}", settingsInfo, token, method);
+            var destination = $"{Site}{apiMethod}" + method switch
+            {
+                "GET" => "?" + DeserializeToQuery(settings),
+                "HEAD" => "?" + DeserializeToQuery(settings),
+                _ => string.Empty
+            };
+            var settingsInfo = method switch
+            {
+                "GET" => default,
+                "HEAD" => default,
+                _=> DeserializeToRequest(settings)
+            };
+            return await _apiClient.RequestForm<TResult>(destination, settingsInfo, token, method);
         }
 
         private static async Task<string> SerializeToJson(object obj)
