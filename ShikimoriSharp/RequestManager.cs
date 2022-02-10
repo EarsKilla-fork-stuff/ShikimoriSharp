@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -66,6 +67,14 @@ namespace ShikimoriSharp
                 .WaitAndRetryAsync(3, i => TimeSpan.FromSeconds(Math.Pow(2, i)));
             
             var response = await policy.ExecuteAsync(() => Response(dest, method, data));
+
+            var reqContent = response.RequestMessage.Content == null ? string.Empty : await response.RequestMessage.Content.ReadAsStringAsync();
+            var resContent = response.Content == null ? string.Empty : await response.Content.ReadAsStringAsync();
+            Debug.WriteLineIf(Debugger.IsAttached, $"[REQ:{response.RequestMessage.Method} {response.RequestMessage.RequestUri}]:\n" +
+                                                   $"{reqContent}\n" +
+                                                   $"[RES:{response.StatusCode}]:\n" +
+                                                   $"{resContent}\n" +
+                                                   "============================================");
             
             switch (response.StatusCode)
             {
@@ -78,7 +87,7 @@ namespace ShikimoriSharp
             if (!response.IsSuccessStatusCode)
                 throw new Exception($"Unsuccessful request: {response.StatusCode} | {response.ReasonPhrase}");
 
-            return await response.Content.ReadAsStringAsync();
+            return resContent;
         }
 
         public async Task<TResult> ResponseAsType<TResult>(string dest, string method, HttpContent data)
