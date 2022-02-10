@@ -30,7 +30,11 @@ namespace ShikimoriSharp.Bases
 
         private void Refresh(object sender, ElapsedEventArgs args)
         {
-            _sem.Release(MaxTokens);
+            try
+            {
+                _sem.Release(MaxTokens);
+            }
+            catch (SemaphoreFullException) { _timer.Stop(); }
         }
 
         public async Task TokenRequest()
