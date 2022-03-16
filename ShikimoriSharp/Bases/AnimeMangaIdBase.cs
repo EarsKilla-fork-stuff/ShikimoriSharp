@@ -45,6 +45,6 @@ namespace ShikimoriSharp.Bases
     {
         [JsonProperty("name")] public string Name;
 
-        [JsonProperty("value")] public long? Value;
+        [JsonProperty("value")] public decimal? Value;
     }
 }
