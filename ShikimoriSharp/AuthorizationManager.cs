@@ -7,7 +7,7 @@ namespace ShikimoriSharp
 {
     public class AuthorizationManager
     {
-        private const string TokenUrl = "https://shikimori.one/oauth/token";
+        private const string TokenUrl = "https://shikimori.me/oauth/token";
         private readonly ClientSettings _settings;
         private readonly Func<string, HttpContent, Task<AccessToken>> _refreshFunc;
 
