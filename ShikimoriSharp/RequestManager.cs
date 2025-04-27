@@ -70,11 +70,13 @@ namespace ShikimoriSharp
 
             var reqContent = response.RequestMessage.Content == null ? string.Empty : await response.RequestMessage.Content.ReadAsStringAsync();
             var resContent = response.Content == null ? string.Empty : await response.Content.ReadAsStringAsync();
+            #if NETWORK
             Debug.WriteLineIf(Debugger.IsAttached, $"[REQ:{response.RequestMessage.Method} {response.RequestMessage.RequestUri}]:\n" +
                                                    $"{reqContent}\n" +
                                                    $"[RES:{response.StatusCode}]:\n" +
                                                    $"{resContent}\n" +
                                                    "============================================");
+            #endif
             
             switch (response.StatusCode)
             {
